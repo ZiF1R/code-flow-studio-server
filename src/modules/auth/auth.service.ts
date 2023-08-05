@@ -1,16 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { User } from "../../models/user.model";
-import { CreateUserDto } from "./auth.dto";
-
-type GoogleUser = {
-  email: string,
-  firstName: string,
-  lastName: string,
-  picture: string,
-  accessToken: string,
-  refreshToken: string,
-}
+import { GithubUser, GoogleUser } from "./strategies/strategies.user.types";
 
 @Injectable()
 export class AuthService {
@@ -19,33 +10,37 @@ export class AuthService {
     private userModel: typeof User,
   ) {}
 
-  async googleLogin(user: GoogleUser) {
-    const validUser = await this.validateUser(user.email);
-
-    if (!validUser) {
-      return await this.createUser({
-        email: user.email,
-        name: user.firstName ?? null,
-        surname: user.lastName ?? null,
-        avatar_link: user.picture ?? null,
-      });
+  async githubAccess(googleEmail: string, githubUser: GithubUser) {
+    if (!googleEmail) {
+      throw new UnauthorizedException("Have to provide email for GitHub" +
+        " access");
     }
 
-    return validUser;
-  }
-
-  async validateUser(email: string): Promise<any> {
     const users = await this.userModel.findAll({
-      where: {email}
+      where: { email: googleEmail }
     });
-    return users[0] ?? null;
+
+    if (users.length) {
+      const user = users[0];
+      user.set({
+        githubAccessToken: githubUser.accessToken
+      });
+      await user.save();
+    } else {
+      throw new UnauthorizedException("Wrong email");
+    }
   }
 
-  async createUser(data: CreateUserDto): Promise<User> {
-    return await this.userModel.create(data);
-  }
-
-  async getUser(pk: number): Promise<User> {
-    return await this.userModel.findByPk(pk);
+  async googleLogin(user: GoogleUser) {
+    return await this.userModel.findOrCreate({
+      where: { email: user.email },
+      defaults: {
+        accessToken: user.accessToken,
+        refreshToken: user.refreshToken,
+        name: user.firstName ?? null,
+        surname: user.lastName ?? null,
+        picture: user.picture ?? null,
+      }
+    });
   }
 }

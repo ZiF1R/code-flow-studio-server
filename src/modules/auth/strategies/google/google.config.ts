@@ -6,8 +6,8 @@ type GoogleOAuthConfig = {
 }
 
 export default (): GoogleOAuthConfig => ({
-  clientID: process.env.OAUTH_CLIENT_ID,
-  clientSecret: process.env.OAUTH_CLIENT_SECRET,
-  callbackURL: process.env.OAUTH_CALLBACK_URL,
-  scope: String(process.env.OAUTH_SCOPE).split(','),
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: process.env.GOOGLE_CALLBACK_URL,
+  scope: String(process.env.GOOGLE_SCOPE).split(','),
 });
