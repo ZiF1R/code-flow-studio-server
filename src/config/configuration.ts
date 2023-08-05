@@ -1,5 +1,4 @@
 import { SequelizeModuleOptions } from "@nestjs/sequelize";
-import { Users } from "../models/user.model";
 
 export default (): {port: Number, database: SequelizeModuleOptions} => ({
   port: Number(process.env.PORT) || 3001,
@@ -10,6 +9,7 @@ export default (): {port: Number, database: SequelizeModuleOptions} => ({
     username: process.env.DATABASE_USERNAME,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE,
-    models: [Users],
+    synchronize: true,
+    autoLoadModels: true,
   }
 });
