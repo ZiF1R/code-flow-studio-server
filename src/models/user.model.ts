@@ -1,5 +1,14 @@
-import { Column, DataType, Model, Table } from "sequelize-typescript";
+import {
+  BelongsToMany,
+  Column,
+  DataType,
+  HasMany,
+  Model,
+  Table
+} from "sequelize-typescript";
 import { ApiProperty } from "@nestjs/swagger";
+import { Team } from "./team.model";
+import { TeamMember } from "./team-member";
 
 interface UserAttributes {
   id: number;
@@ -30,18 +39,6 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
 
   @ApiProperty({required: true})
   @Column({type: DataType.STRING, unique: true, allowNull: false})
-  accessToken: string;
-
-  @ApiProperty({required: false})
-  @Column({type: DataType.STRING, unique: true})
-  githubAccessToken: string;
-
-  @ApiProperty({required: false})
-  @Column({type: DataType.STRING, unique: true})
-  refreshToken: string;
-
-  @ApiProperty({required: true})
-  @Column({type: DataType.STRING, unique: true, allowNull: false})
   email: string;
 
   @ApiProperty({required: false})
@@ -59,4 +56,22 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   @ApiProperty({required: false})
   @Column({type: DataType.STRING})
   picture: string;
+
+  @ApiProperty({required: true})
+  @Column({type: DataType.STRING, unique: true, allowNull: false})
+  accessToken: string;
+
+  @ApiProperty({required: false})
+  @Column({type: DataType.STRING, unique: true})
+  githubAccessToken: string;
+
+  @ApiProperty({required: false})
+  @Column({type: DataType.STRING, unique: true})
+  refreshToken: string;
+
+  @HasMany(() => Team, 'adminId')
+  adminOfTeams: Team[];
+
+  @BelongsToMany(() => Team, () => TeamMember)
+  userAsTeamMember: Team[];
 }

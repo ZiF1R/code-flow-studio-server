@@ -12,12 +12,15 @@ import { User } from "../../models/user.model";
 import { GoogleStrategy } from "./strategies/google/google.strategy";
 import { GithubStrategy } from "./strategies/github/github.strategy";
 import { GithubAccessMiddleware } from "./strategies/github/github.middleware";
+import { TeamsService } from "../teams/teams.service";
+import { Team } from "../../models/team.model";
+import { TeamMember } from "../../models/team-member";
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, GithubStrategy],
+  providers: [AuthService, TeamsService, GoogleStrategy, GithubStrategy],
   imports: [
-    SequelizeModule.forFeature([User]),
+    SequelizeModule.forFeature([User, Team, TeamMember]),
     PassportModule,
   ]
 })

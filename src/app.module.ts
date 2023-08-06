@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
+import { TeamsModule } from './modules/teams/teams.module';
 import configuration from "./config/configuration";
 
 @Module({
@@ -12,6 +13,7 @@ import configuration from "./config/configuration";
     }),
     SequelizeModule.forRoot(configuration().database),
     AuthModule,
+    TeamsModule,
   ],
   controllers: [],
   providers: [],
