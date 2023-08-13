@@ -1,4 +1,4 @@
 import { Controller } from '@nestjs/common';
 
-@Controller('teams')
+@Controller('api/teams')
 export class TeamsController {}

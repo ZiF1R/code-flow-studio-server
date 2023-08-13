@@ -3,6 +3,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { TeamsModule } from './modules/teams/teams.module';
+import { ProjectsModule } from './modules/projects/projects.module';
 import configuration from "./config/configuration";
 
 @Module({
@@ -14,6 +15,7 @@ import configuration from "./config/configuration";
     SequelizeModule.forRoot(configuration().database),
     AuthModule,
     TeamsModule,
+    ProjectsModule,
   ],
   controllers: [],
   providers: [],
