@@ -53,12 +53,12 @@ export class AuthService {
       defaults: data,
     });
 
-    if (created) {
-      await this.teamsService.createTeam({
-        name: "Personal",
-        adminId: user.id,
-      })
-    }
+    // if (created) {
+    //   await this.teamsService.createTeam({
+    //     name: "Personal",
+    //     adminId: user.id,
+    //   })
+    // }
 
     return user;
   }

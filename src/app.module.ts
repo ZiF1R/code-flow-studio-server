@@ -3,8 +3,12 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { TeamsModule } from './modules/teams/teams.module';
+import { TeamMembersModule } from './modules/teams/team-members/team-members.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import configuration from "./config/configuration";
+import {
+  InvitationsModule
+} from "./modules/teams/invitations/invitations.module";
 
 @Module({
   imports: [
@@ -16,6 +20,8 @@ import configuration from "./config/configuration";
     AuthModule,
     TeamsModule,
     ProjectsModule,
+    TeamMembersModule,
+    InvitationsModule
   ],
   controllers: [],
   providers: [],

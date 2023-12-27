@@ -8,7 +8,10 @@ import {
 } from "sequelize-typescript";
 import { ApiProperty } from "@nestjs/swagger";
 import { Team } from "./team.model";
-import { TeamMember } from "./team-member";
+import { TeamMember } from "./team-member.model";
+import {Invitation} from "./invitation.model";
+import {UserPermissions} from "./user-permissions.model";
+import {Project} from "./project.model";
 
 interface UserAttributes {
   id: number;
@@ -74,4 +77,13 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
 
   @BelongsToMany(() => Team, () => TeamMember)
   userAsTeamMember: Team[];
+
+  @BelongsToMany(() => Team, () => Invitation)
+  userInvitations: Invitation[];
+
+  @BelongsToMany(() => Project, () => UserPermissions)
+  userProjectPermissions: UserPermissions[];
+
+  @BelongsToMany(() => Team, () => UserPermissions)
+  userTeamPermissions: UserPermissions[];
 }

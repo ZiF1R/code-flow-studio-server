@@ -1,5 +1,12 @@
 export class CreateTeamDto {
-  readonly name: string | 'Personal';
+  readonly name: string;
+  readonly adminId: number;
+  readonly picture?: string;
+}
+
+export class ChangeTeamDto {
+  readonly id: number;
+  readonly name: string;
   readonly adminId: number;
   readonly picture?: string;
 }
