@@ -1,7 +1,16 @@
-import {Body, Controller, Get, Post, Put, Req, Request} from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Post,
+  Put,
+  Req,
+  Request, Res
+} from "@nestjs/common";
 import { ProjectsService } from "./projects.service";
-import {CreateTeamDto} from "../teams/teams.dto";
 import {ApiTags} from "@nestjs/swagger";
+import {CreateProjectDataDto} from "./projects.dto";
 
 @ApiTags("Projects")
 @Controller('api/projects')
@@ -11,11 +20,14 @@ export class ProjectsController {
   ) {}
 
   @Put()
-  async createProject(@Body() createTeamDto: CreateTeamDto) {
-    /**
-     * from request:
-     * app type (node, go, python, php, static, ruby, rust)
-     */
-    return await this.projectService.createProject();
+  async createProject(@Res() response, @Body() data: CreateProjectDataDto) {
+    const project = await this.projectService.createProject(data);
+    return response.status(HttpStatus.OK).json({project});
+  }
+
+  @Get()
+  async getProjects(@Res() response) {
+    const projects = await this.projectService.getUserProjects();
+    return response.status(HttpStatus.OK).json({projects});
   }
 }

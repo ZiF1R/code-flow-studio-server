@@ -16,7 +16,7 @@ import {FilesFolder} from "./files-folder.model";
 interface ProjectAttributes {
   id: number;
   userId: number;
-  teamId: number;
+  teamId?: number;
   folderId: number;
   name: string;
   codeName: string;
@@ -28,7 +28,7 @@ interface ProjectAttributes {
 
 interface ProjectCreationAttributes extends ProjectAttributes {
   userId: number;
-  teamId: number;
+  teamId?: number;
   name: string;
   codeName: string;
   template: boolean;
