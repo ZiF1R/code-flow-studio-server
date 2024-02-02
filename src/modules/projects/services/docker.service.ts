@@ -1,8 +1,10 @@
-import { FsService } from "./fs.service";
-import { execSync, spawnSync } from "child_process";
-import { NewProject } from "./types";
-import { Injectable } from "@nestjs/common";
-import { DockerfileService } from "./dockerfile.service";
+import {FsService} from "./fs.service";
+import {execSync, spawnSync} from "child_process";
+import {NewProject} from "./types";
+import {Injectable} from "@nestjs/common";
+import {DockerfileService} from "./dockerfile.service";
+import {Template} from "../../../models/template.model";
+import {CreateProjectDataDto} from "../projects.dto";
 
 @Injectable()
 export class DockerService {
@@ -49,12 +51,12 @@ export class DockerService {
     execSync(`docker rm ${container}`);
   }
 
-  async initProject(templateLink: string): Promise<NewProject> {
-    const newProject = await this.fsService.generateProject(templateLink);
+  async initProject(data: CreateProjectDataDto): Promise<NewProject> {
     // this.dockerfileService.generateDockerfile(newProject.path);
     // this.createContainer(newProject.name, "static-template");
-    this.runImage(newProject.name, "static-template");
 
-    return newProject;
+    // this.runImage(newProject.name, "static-template");
+
+    return await this.fsService.generateProject(data);
   }
 }

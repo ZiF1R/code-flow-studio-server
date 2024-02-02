@@ -3,11 +3,16 @@ import { existsSync, mkdirSync } from "fs";
 import { execSync } from "child_process"
 import { join, normalize } from "path"
 import { NewProject } from "./types";
-import { Injectable } from "@nestjs/common";
+import {BadRequestException, Injectable} from "@nestjs/common";
+import * as fs from "fs";
+import {Template} from "../../../models/template.model";
+import {CreateProjectDataDto} from "../projects.dto";
 
 const BASE_DIR = normalize(join(__dirname, '../../../../public'));
 const BASE_PROJECTS_DIR = `${BASE_DIR}/projects`;
 const BASE_REPOSITORIES_DIR = `${BASE_DIR}/repositories`;
+
+const BASE_TEMPLATES_DIR = normalize(join(__dirname, '../../../../../templates'));
 
 @Injectable()
 export class FsService {
@@ -31,7 +36,18 @@ export class FsService {
     return `${this.generateRandomCode(namePartLength)}-${this.generateRandomCode(namePartLength)}-${this.generateRandomCode(namePartLength)}`;
   }
 
-  async generateProject(templateLink): Promise<NewProject> {
+  getTemplatePath(data: CreateProjectDataDto): string {
+    if (data.defaultTemplate !== null) {
+      return `${BASE_TEMPLATES_DIR}/${data.defaultTemplate.codeName}`;
+    } else if (data.userTemplate !== null) {
+      return `${BASE_PROJECTS_DIR}/${data.userTemplate.codeName}`;
+    } else {
+      throw new BadRequestException();
+    }
+  }
+
+  async generateProject(data: CreateProjectDataDto): Promise<NewProject> {
+    const src: string = this.getTemplatePath(data);
     let name: string = this.generateProjectName();
     let pathToProject: string = `${BASE_PROJECTS_DIR}/${name}`;
 
@@ -41,7 +57,8 @@ export class FsService {
     }
 
     mkdirSync(pathToProject);
-    await this.cloneRepository(templateLink, pathToProject);
+    fs.cpSync(src, pathToProject, {recursive: true});
+    // await this.cloneRepository(templateLink, pathToProject);
 
     return { path: pathToProject, name };
   }

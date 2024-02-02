@@ -7,32 +7,32 @@ import {
   Table
 } from "sequelize-typescript";
 import { ApiProperty } from "@nestjs/swagger";
-import {UserPermissions} from "./user-permissions.model";
 import {Team} from "./team.model";
 import {User} from "./user.model";
 import {Folder} from "./folder.model";
-import {FilesFolder} from "./files-folder.model";
 
 interface ProjectAttributes {
   id: number;
   userId: number;
   teamId?: number;
-  folderId: number;
+  folderId?: number;
   name: string;
   codeName: string;
   template: boolean;
   public: boolean;
-  description: string;
+  description?: string;
   freezed: boolean;
 }
 
 interface ProjectCreationAttributes extends ProjectAttributes {
   userId: number;
   teamId?: number;
+  folderId?: number;
   name: string;
   codeName: string;
   template: boolean;
   public: boolean;
+  description?: string;
   freezed: boolean;
 }
 
@@ -69,7 +69,7 @@ export class Project extends Model<ProjectAttributes, ProjectCreationAttributes>
 
   @ApiProperty({required: true})
   @Column({ type: DataType.STRING, allowNull: false })
-  code_name: string;
+  codeName: string;
 
   @ApiProperty({required: false})
   @Column({ type: DataType.STRING, allowNull: true })

@@ -9,6 +9,7 @@ import configuration from "./config/configuration";
 import {
   InvitationsModule
 } from "./modules/teams/invitations/invitations.module";
+import {TemplatesModule} from "./modules/projects/templates/templates.module";
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import {
     TeamsModule,
     ProjectsModule,
     TeamMembersModule,
-    InvitationsModule
+    InvitationsModule,
+    TemplatesModule
   ],
   controllers: [],
   providers: [],

@@ -2,9 +2,9 @@ import {
   Body,
   Controller,
   Get,
-  HttpStatus,
+  HttpStatus, Param,
   Post,
-  Put,
+  Put, Query,
   Req,
   Request, Res
 } from "@nestjs/common";
@@ -26,8 +26,24 @@ export class ProjectsController {
   }
 
   @Get()
-  async getProjects(@Res() response) {
-    const projects = await this.projectService.getUserProjects();
+  async getProjects(@Res() response, @Query('userId') userId) {
+    const projects = await this.projectService.getUserProjects(+userId);
+    return response.status(HttpStatus.OK).json({projects});
+  }
+
+  @Get("/:projectCodeName")
+  async getProject(@Res() response, @Param('projectCodeName') codeName: string, @Query('userId') userId) {
+    try {
+      const project = await this.projectService.getProject(codeName, +userId);
+      return response.status(HttpStatus.OK).json({project});
+    } catch (e) {
+      return response.status(HttpStatus.NOT_ACCEPTABLE).json({});
+    }
+  }
+
+  @Get('/recent')
+  async getRecentProjects(@Res() response, @Query('userId') userId: string, @Query('page') page: string) {
+    const projects = await this.projectService.getUserRecentProjects(+userId, +page);
     return response.status(HttpStatus.OK).json({projects});
   }
 }
