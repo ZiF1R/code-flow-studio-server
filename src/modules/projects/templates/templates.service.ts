@@ -13,7 +13,6 @@ export class TemplatesService {
   ) {}
 
   async getDefaultTemplates(): Promise<Template[]> {
-    console.log(await this.templateModel.findAll());
     return await this.templateModel.findAll();
   }
 

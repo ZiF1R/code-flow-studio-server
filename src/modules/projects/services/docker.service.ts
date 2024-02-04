@@ -10,7 +10,6 @@ import {CreateProjectDataDto} from "../projects.dto";
 export class DockerService {
   constructor(
     private dockerfileService: DockerfileService,
-    private fsService: FsService,
   ) {}
 
   createImage({ path, name }) {
@@ -51,12 +50,10 @@ export class DockerService {
     execSync(`docker rm ${container}`);
   }
 
-  async initProject(data: CreateProjectDataDto): Promise<NewProject> {
+  async initProject(data: CreateProjectDataDto): Promise<void> {
     // this.dockerfileService.generateDockerfile(newProject.path);
     // this.createContainer(newProject.name, "static-template");
 
     // this.runImage(newProject.name, "static-template");
-
-    return await this.fsService.generateProject(data);
   }
 }

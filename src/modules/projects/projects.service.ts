@@ -7,18 +7,24 @@ import { DockerService } from "./services/docker.service";
 import {Project} from "../../models/project.model";
 import {CreateProjectDataDto, CreateProjectDto} from "./projects.dto";
 import {InjectModel} from "@nestjs/sequelize";
+import {FsService} from "./services/fs.service";
+import {User} from "../../models/user.model";
+import {ProjectRoom} from "./events.interface";
 
 @Injectable()
 export class ProjectsService {
   constructor(
     private dockerService: DockerService,
     @InjectModel(Project)
-    private projectModel: typeof Project
+    private projectModel: typeof Project,
+    private fsService: FsService,
   ) {}
 
+  private projectsRooms: ProjectRoom[] = []
+
   async createProject(projectData: CreateProjectDataDto): Promise<Project> {
-    const fsProject = await this.dockerService.initProject(projectData);
-    console.log(fsProject, projectData);
+    // await this.dockerService.initProject(projectData);
+    const fsProject = await this.fsService.generateProject(projectData);
     return await this.projectModel.create({
       userId: projectData.userId,
       teamId: projectData?.teamId || null,
@@ -45,7 +51,8 @@ export class ProjectsService {
   async getProject(codeName: string, userId: number): Promise<Project> {
     const project = (await this.projectModel.findAll({
       where: {
-        userId
+        userId,
+        codeName
       }
     }))[0];
 
@@ -75,5 +82,72 @@ export class ProjectsService {
   // TODO: project delete method
   async deleteTeamProjects(teamId: number) {
     // await
+  }
+
+  async addRoom(codeName: string, user: User): Promise<void> {
+    const project = await this.projectModel.findOne({
+      where: {
+        codeName
+      }
+    });
+    this.projectsRooms.push({
+      project,
+      users: [user]
+    })
+  }
+
+  async removeProjectRoom(codeName: string): Promise<void> {
+    const findRoom = await this.getProjectRoom(codeName)
+    if (findRoom !== null) {
+      this.projectsRooms = this.projectsRooms.filter((room) => room.project.codeName !== codeName)
+    }
+  }
+
+  async getProjectRoom(codeName: string): Promise<number> | null {
+    const projectRoom = this.projectsRooms.findIndex(room => room.project.codeName === codeName);
+
+    if (projectRoom === -1) {
+      return null;
+    } else {
+      return projectRoom;
+    }
+  }
+
+  isProjectRoomContainsUser(room: ProjectRoom, user: User) {
+    return room.users.filter(usr => usr.id === user.id).length > 0;
+  }
+
+  async addUserToProject(codeName: string, user: User): Promise<void> {
+    const projectRoomIndex = await this.getProjectRoom(codeName);
+    if (projectRoomIndex !== null) {
+      if (!this.isProjectRoomContainsUser(this.projectsRooms[projectRoomIndex], user)) {
+        this.projectsRooms[projectRoomIndex].users.push(user);
+      }
+    } else {
+      await this.addRoom(codeName, user);
+    }
+  }
+
+  async getRoomByUser(email: string): Promise<ProjectRoom> {
+    const room = this.projectsRooms.find(room => room.users.filter(user => user.email === email).length > 0);
+    if (room) {
+      return room;
+    } else {
+      return null;
+    }
+  }
+
+  async removeUserFromRoom(email: string): Promise<void> {
+    const room = await this.getRoomByUser(email);
+    if (room) {
+      room.users = room.users.filter((user) => user.email !== email);
+      if (room.users.length === 0) {
+        await this.removeProjectRoom(room.project.codeName);
+      }
+    }
+  }
+
+  getProjectsRooms(): ProjectRoom[] {
+    return this.projectsRooms;
   }
 }

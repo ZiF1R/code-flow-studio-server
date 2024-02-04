@@ -11,6 +11,7 @@ import {
 import { ProjectsService } from "./projects.service";
 import {ApiTags} from "@nestjs/swagger";
 import {CreateProjectDataDto} from "./projects.dto";
+import {ProjectRoom} from "./events.interface";
 
 @ApiTags("Projects")
 @Controller('api/projects')
@@ -31,7 +32,7 @@ export class ProjectsController {
     return response.status(HttpStatus.OK).json({projects});
   }
 
-  @Get("/:projectCodeName")
+  @Get("/code-names/:projectCodeName")
   async getProject(@Res() response, @Param('projectCodeName') codeName: string, @Query('userId') userId) {
     try {
       const project = await this.projectService.getProject(codeName, +userId);
@@ -45,5 +46,12 @@ export class ProjectsController {
   async getRecentProjects(@Res() response, @Query('userId') userId: string, @Query('page') page: string) {
     const projects = await this.projectService.getUserRecentProjects(+userId, +page);
     return response.status(HttpStatus.OK).json({projects});
+  }
+
+  @Get('/rooms/:roomName')
+  async getRoom(@Res() response, @Param('roomName') roomName: string): Promise<ProjectRoom> {
+    const roomIndex = await this.projectService.getProjectRoom(roomName);
+    const room = this.projectService.getProjectsRooms()[roomIndex];
+    return response.status(HttpStatus.OK).json({room});
   }
 }

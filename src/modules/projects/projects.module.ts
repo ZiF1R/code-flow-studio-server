@@ -20,10 +20,11 @@ import {TasksColumn} from "../../models/tasks-column.model";
 import {TasksAssign} from "../../models/task-assign.model";
 import {TasksPriority} from "../../models/tasks-priority.model";
 import {Task} from "../../models/task.model";
+import { ProjectsGateway } from './projects.gateway';
 
 @Module({
   controllers: [ProjectsController],
-  providers: [ProjectsService, DockerService, DockerfileService, FsService],
+  providers: [ProjectsService, DockerService, DockerfileService, FsService, ProjectsGateway],
   imports: [
     SequelizeModule.forFeature([UserPermissions, Project, File, FilesFolder, Folder, ProjectParticipant, VisitedProject, FavoriteProject, Message, MessageMedia, MediaType, TasksColumn, TasksAssign, TasksPriority, Task]),
   ]
