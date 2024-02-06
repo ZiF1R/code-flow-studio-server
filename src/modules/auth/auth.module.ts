@@ -16,13 +16,25 @@ import { TeamsService } from "../teams/teams.service";
 import { Team } from "../../models/team.model";
 import { TeamMember } from "../../models/team-member.model";
 import {TeamMembersService} from "../teams/team-members/team-members.service";
+import {JwtModule} from "@nestjs/jwt";
+import {ConfigModule} from "@nestjs/config";
+import {getJwtSecret} from "../../config/configuration";
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, TeamsService, GoogleStrategy, GithubStrategy, TeamMembersService],
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: `.env.${process.env.NODE_ENV}`,
+      isGlobal: true
+    }),
     SequelizeModule.forFeature([User, Team, TeamMember]),
     PassportModule,
+    JwtModule.register({
+      global: true,
+      secret: getJwtSecret().token,
+      signOptions: { expiresIn: '3600s' },
+    }),
   ]
 })
 export class AuthModule implements NestModule {

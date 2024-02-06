@@ -1,4 +1,6 @@
-export class CreateUserDto {
+import {User} from "../../models/user.model";
+
+export interface CreateUserDto {
   readonly accessToken: string;
   readonly githubAccessToken?: string;
   readonly refreshToken?: string;
@@ -9,7 +11,12 @@ export class CreateUserDto {
   readonly picture?: string;
 }
 
-export class GithubAccess {
+export interface GithubAccess {
   readonly email: string;
   readonly githubAccessToken: string;
+}
+
+export interface AuthPayload {
+  user: User;
+  token: string;
 }

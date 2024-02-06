@@ -10,6 +10,9 @@ import {
   InvitationsModule
 } from "./modules/teams/invitations/invitations.module";
 import {TemplatesModule} from "./modules/projects/templates/templates.module";
+import {APP_GUARD} from "@nestjs/core";
+import {AuthGuard} from "./modules/auth/auth.guard";
+import {AuthService} from "./modules/auth/auth.service";
 
 @Module({
   imports: [
@@ -26,6 +29,8 @@ import {TemplatesModule} from "./modules/projects/templates/templates.module";
     TemplatesModule
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    { provide: APP_GUARD, useClass: AuthGuard }
+  ],
 })
 export class AppModule {}

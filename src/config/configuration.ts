@@ -13,3 +13,7 @@ export default (): {port: Number, database: SequelizeModuleOptions} => ({
     autoLoadModels: true,
   }
 });
+
+export const getJwtSecret = () => ({
+  token: process.env.JWT_SECRET
+})
