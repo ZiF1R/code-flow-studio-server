@@ -33,7 +33,9 @@ import {getJwtSecret} from "../../config/configuration";
     JwtModule.register({
       global: true,
       secret: getJwtSecret().token,
-      signOptions: { expiresIn: '3600s' },
+      signOptions: {
+        expiresIn: getJwtSecret().expires
+      },
     }),
   ]
 })

@@ -1,10 +1,16 @@
-import {Injectable, UnauthorizedException} from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException
+} from "@nestjs/common";
 import {InjectModel} from "@nestjs/sequelize";
 import {User} from "../../models/user.model";
 import {GithubUser, GoogleUser} from "./strategies/strategies.user.types";
 import {AuthPayload, CreateUserDto} from "./auth.dto";
 import {TeamsService} from "../teams/teams.service";
 import {JwtService} from "@nestjs/jwt";
+import {getJwtSecret} from "../../config/configuration";
+import {Request} from "express";
 
 @Injectable()
 export class AuthService {
@@ -65,10 +71,13 @@ export class AuthService {
   }
 
   async signIn(user: User): Promise<AuthPayload> {
-    const token = await this.jwtService.signAsync({ sub: user.id, email: user.email });
+    const token = await this.jwtService.signAsync({
+      sub: user.id,
+      email: user.email
+    });
     return {
+      user,
       token,
-      user
     }
   }
 
@@ -80,5 +89,29 @@ export class AuthService {
         "name", "surname", "picture"
       ]
     });
+  }
+
+  extractTokenFromHeader(request: Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') || [];
+    return type === 'Bearer' ? token : undefined;
+  }
+
+  async refreshCurrentToken(token: string, id: number, email: string): Promise<string> {
+    try {
+      const isValid = await this.verifyExpiredToken(token, id, email);
+      if (isValid) {
+        return await this.jwtService.signAsync({
+          sub: id,
+          email: email
+        });
+      }
+    } catch (e) {
+      throw new BadRequestException();
+    }
+  }
+
+  private async verifyExpiredToken(token: string, id: number, email: string): Promise<boolean> {
+    const tokenData = await this.jwtService.decode(token);
+    return tokenData.email === email && tokenData.sub === id;
   }
 }

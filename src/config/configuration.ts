@@ -15,5 +15,7 @@ export default (): {port: Number, database: SequelizeModuleOptions} => ({
 });
 
 export const getJwtSecret = () => ({
-  token: process.env.JWT_SECRET
+  token: process.env.JWT_SECRET,
+  refreshToken: process.env.JWT_REFRESH_SECRET,
+  expires: process.env.JWT_TOKEN_EXPIRES
 })

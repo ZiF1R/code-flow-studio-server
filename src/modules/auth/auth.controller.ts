@@ -52,4 +52,12 @@ export class AuthController {
     const user = await this.authService.loadCurrentUser(req.auth?.email);
     return res.status(HttpStatus.OK).json({user});
   }
+
+  @SkipAuth()
+  @Get('/user/refresh-token')
+  async refreshToken(@Res() res, @Request() req) {
+    const currentToken = this.authService.extractTokenFromHeader(req);
+    const token = await this.authService.refreshCurrentToken(currentToken, +req.query.id, req.query.email);
+    return res.status(HttpStatus.OK).json({token});
+  }
 }

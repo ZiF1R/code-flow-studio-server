@@ -38,6 +38,7 @@ export class ProjectsController {
       const project = await this.projectService.getProject(codeName, +userId);
       return response.status(HttpStatus.OK).json({project});
     } catch (e) {
+      console.log('error get project')
       return response.status(HttpStatus.NOT_ACCEPTABLE).json({});
     }
   }

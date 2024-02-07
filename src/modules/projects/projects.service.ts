@@ -49,12 +49,11 @@ export class ProjectsService {
   }
 
   async getProject(codeName: string, userId: number): Promise<Project> {
-    const project = (await this.projectModel.findAll({
+    const project = await this.projectModel.findOne({
       where: {
-        userId,
         codeName
       }
-    }))[0];
+    });
 
     if (project.public) {
       return project;
@@ -104,7 +103,7 @@ export class ProjectsService {
   }
 
   async getProjectRoom(codeName: string): Promise<number> | null {
-    const projectRoom = this.projectsRooms.findIndex(room => room.project.codeName === codeName);
+    const projectRoom = this.projectsRooms.findIndex(room => room.project?.codeName === codeName);
 
     if (projectRoom === -1) {
       return null;

@@ -20,3 +20,8 @@ export interface AuthPayload {
   user: User;
   token: string;
 }
+
+export type TokensPair = {
+  accessToken: string;
+  refreshToken: string;
+}
