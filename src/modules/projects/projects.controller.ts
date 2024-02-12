@@ -32,6 +32,12 @@ export class ProjectsController {
     return response.status(HttpStatus.OK).json({projects});
   }
 
+  @Get('/templates')
+  async getTemplates(@Res() response, @Query('userId') userId) {
+    const templates = await this.projectService.getUserTemplates(+userId);
+    return response.status(HttpStatus.OK).json({templates});
+  }
+
   @Get("/code-names/:projectCodeName")
   async getProject(@Res() response, @Param('projectCodeName') codeName: string, @Query('userId') userId) {
     try {

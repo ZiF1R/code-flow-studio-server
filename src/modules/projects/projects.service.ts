@@ -50,12 +50,25 @@ export class ProjectsService {
   }
 
   async getUserProjects(userId: number): Promise<Project[]> {
-    // TODO: check auth token with middleware
-    // https://docs.nestjs.com/security/authentication#implementing-the-authentication-guard
     return await this.projectModel.findAll({
       where: {
         userId
-      }
+      },
+      order: [
+        ['updatedAt', 'DESC']
+      ],
+    })
+  }
+
+  async getUserTemplates(userId: number): Promise<Project[]> {
+    return await this.projectModel.findAll({
+      where: {
+        userId,
+        template: true,
+      },
+      order: [
+        ['updatedAt', 'DESC']
+      ],
     })
   }
 
@@ -77,15 +90,24 @@ export class ProjectsService {
 
   async getUserRecentProjects(userId: number, page: number = 1): Promise<Project[]> {
     const pageCapacity = 8;
-    return await this.projectModel.findAll({
+    const visitedProjectsIds = await this.visitedProjectModel.findAll({
       where: {
         userId,
       },
+      attributes: ['projectId'],
       order: [
         ['updatedAt', 'DESC']
       ],
       limit: pageCapacity,
       offset: (page - 1) * pageCapacity
+    });
+    return await this.projectModel.findAll({
+      where: {
+        id: visitedProjectsIds.map(p => p.projectId),
+      },
+      order: [
+        ['updatedAt', 'DESC']
+      ],
     });
   }
 
@@ -214,5 +236,12 @@ export class ProjectsService {
       projectVisit.timeStamp = data.timeStamp;
       await projectVisit.save();
     }
+
+    const project = await this.projectModel.findOne({
+      where: {id: data.projectId}
+    });
+    project.changed('updatedAt', true);
+    project.updatedAt = data.timeStamp;
+    await project.save();
   }
 }
