@@ -5,11 +5,20 @@ import {
 } from "@nestjs/common";
 import { DockerService } from "./services/docker.service";
 import {Project} from "../../models/project.model";
-import {CreateProjectDataDto, CreateProjectDto} from "./projects.dto";
+import {
+  CreateProjectDataDto,
+  CreateProjectDto,
+  VisitProjectDto
+} from "./projects.dto";
 import {InjectModel} from "@nestjs/sequelize";
 import {FsService} from "./services/fs.service";
 import {User} from "../../models/user.model";
-import {ProjectRoom} from "./events.interface";
+import {
+  FileMap, ProjectFile,
+  ProjectRoom,
+  ProjectRoomUser
+} from "./websockets/events.interface";
+import {VisitedProject} from "../../models/visited-project.model";
 
 @Injectable()
 export class ProjectsService {
@@ -17,6 +26,8 @@ export class ProjectsService {
     private dockerService: DockerService,
     @InjectModel(Project)
     private projectModel: typeof Project,
+    @InjectModel(VisitedProject)
+    private visitedProjectModel: typeof VisitedProject,
     private fsService: FsService,
   ) {}
 
@@ -83,7 +94,7 @@ export class ProjectsService {
     // await
   }
 
-  async addRoom(codeName: string, user: User): Promise<void> {
+  async addRoom(codeName: string, user: ProjectRoomUser): Promise<void> {
     const project = await this.projectModel.findOne({
       where: {
         codeName
@@ -96,13 +107,13 @@ export class ProjectsService {
   }
 
   async removeProjectRoom(codeName: string): Promise<void> {
-    const findRoom = await this.getProjectRoom(codeName)
+    const findRoom = await this.getProjectRoomIndex(codeName)
     if (findRoom !== null) {
       this.projectsRooms = this.projectsRooms.filter((room) => room.project.codeName !== codeName)
     }
   }
 
-  async getProjectRoom(codeName: string): Promise<number> | null {
+  async getProjectRoomIndex(codeName: string): Promise<number> | null {
     const projectRoom = this.projectsRooms.findIndex(room => room.project?.codeName === codeName);
 
     if (projectRoom === -1) {
@@ -112,23 +123,37 @@ export class ProjectsService {
     }
   }
 
-  isProjectRoomContainsUser(room: ProjectRoom, user: User) {
-    return room.users.filter(usr => usr.id === user.id).length > 0;
-  }
+  getProjectRoom(codeName: string): ProjectRoom | null {
+    const projectRoom = this.projectsRooms.findIndex(room => room.project?.codeName === codeName);
 
-  async addUserToProject(codeName: string, user: User): Promise<void> {
-    const projectRoomIndex = await this.getProjectRoom(codeName);
-    if (projectRoomIndex !== null) {
-      if (!this.isProjectRoomContainsUser(this.projectsRooms[projectRoomIndex], user)) {
-        this.projectsRooms[projectRoomIndex].users.push(user);
-      }
+    if (projectRoom === -1) {
+      return null;
     } else {
-      await this.addRoom(codeName, user);
+      return this.projectsRooms[projectRoom];
     }
   }
 
-  async getRoomByUser(email: string): Promise<ProjectRoom> {
-    const room = this.projectsRooms.find(room => room.users.filter(user => user.email === email).length > 0);
+  isProjectRoomContainsUser(room: ProjectRoom, user: ProjectRoomUser) {
+    return room.users.filter(usr => usr.id === user.id).length > 0;
+  }
+
+  async addUserToProject(codeName: string, user: User, socket: string): Promise<void> {
+    const projectRoomIndex = await this.getProjectRoomIndex(codeName);
+    const roomUser = {
+      ...user,
+      socket
+    }
+    if (projectRoomIndex !== null) {
+      if (!this.isProjectRoomContainsUser(this.projectsRooms[projectRoomIndex], roomUser)) {
+        this.projectsRooms[projectRoomIndex].users.push(roomUser);
+      }
+    } else {
+      await this.addRoom(codeName, roomUser);
+    }
+  }
+
+  async getRoomByUser(socket: string): Promise<ProjectRoom> {
+    const room = this.projectsRooms.find(room => room.users.filter(user => user.socket === socket).length > 0);
     if (room) {
       return room;
     } else {
@@ -136,17 +161,58 @@ export class ProjectsService {
     }
   }
 
-  async removeUserFromRoom(email: string): Promise<void> {
-    const room = await this.getRoomByUser(email);
+  async removeUserFromRoom(socket: string): Promise<{ projectName: string, user: ProjectRoomUser } | null> {
+    const room = await this.getRoomByUser(socket);
+    let targetUser = null;
     if (room) {
-      room.users = room.users.filter((user) => user.email !== email);
+      room.users = room.users.filter((user) => {
+        if (user.socket !== socket) {
+          return user;
+        } else {
+          targetUser = user;
+        }
+      });
       if (room.users.length === 0) {
         await this.removeProjectRoom(room.project.codeName);
       }
+      return {
+        projectName: room.project.codeName,
+        user: targetUser
+      }
     }
+    return null;
   }
 
   getProjectsRooms(): ProjectRoom[] {
     return this.projectsRooms;
+  }
+
+  async getProjectTree(codeName: string): Promise<FileMap> {
+    const tree = await this.fsService.getFilesTree(codeName);
+    this.fsService.startId = 0;
+    return tree;
+  }
+
+  async createProjectFile(projectName: string, data: ProjectFile): Promise<boolean> {
+    return await this.fsService.createFile(projectName, data);
+  }
+
+  async getFileContent(projectName: string, path: string): Promise<string> {
+    return await this.fsService.getFileContent(projectName, path);
+  }
+
+  async updateProjectVisit(data: VisitProjectDto) {
+    const [projectVisit, created] = await this.visitedProjectModel.findOrCreate({
+      where: {
+        userId: data.userId,
+        projectId: data.projectId,
+      },
+      defaults: data
+    });
+
+    if (!created) {
+      projectVisit.timeStamp = data.timeStamp;
+      await projectVisit.save();
+    }
   }
 }

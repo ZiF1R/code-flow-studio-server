@@ -20,7 +20,7 @@ import {TasksColumn} from "../../models/tasks-column.model";
 import {TasksAssign} from "../../models/task-assign.model";
 import {TasksPriority} from "../../models/tasks-priority.model";
 import {Task} from "../../models/task.model";
-import { ProjectsGateway } from './projects.gateway';
+import { ProjectsGateway } from './websockets/projects.gateway';
 
 @Module({
   controllers: [ProjectsController],

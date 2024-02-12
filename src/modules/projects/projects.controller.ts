@@ -10,8 +10,8 @@ import {
 } from "@nestjs/common";
 import { ProjectsService } from "./projects.service";
 import {ApiTags} from "@nestjs/swagger";
-import {CreateProjectDataDto} from "./projects.dto";
-import {ProjectRoom} from "./events.interface";
+import {CreateProjectDataDto, VisitProjectDto} from "./projects.dto";
+import {ProjectRoom} from "./websockets/events.interface";
 
 @ApiTags("Projects")
 @Controller('api/projects')
@@ -36,9 +36,9 @@ export class ProjectsController {
   async getProject(@Res() response, @Param('projectCodeName') codeName: string, @Query('userId') userId) {
     try {
       const project = await this.projectService.getProject(codeName, +userId);
-      return response.status(HttpStatus.OK).json({project});
+      const filesTree = await this.projectService.getProjectTree(codeName);
+      return response.status(HttpStatus.OK).json({project, filesTree});
     } catch (e) {
-      console.log('error get project')
       return response.status(HttpStatus.NOT_ACCEPTABLE).json({});
     }
   }
@@ -51,8 +51,20 @@ export class ProjectsController {
 
   @Get('/rooms/:roomName')
   async getRoom(@Res() response, @Param('roomName') roomName: string): Promise<ProjectRoom> {
-    const roomIndex = await this.projectService.getProjectRoom(roomName);
+    const roomIndex = await this.projectService.getProjectRoomIndex(roomName);
     const room = this.projectService.getProjectsRooms()[roomIndex];
     return response.status(HttpStatus.OK).json({room});
+  }
+
+  @Get('/files')
+  async getProjectFile(@Res() response, @Query('projectName') projectName: string, @Query('path') path: string) {
+    const fileContent = await this.projectService.getFileContent(projectName, path);
+    return response.status(HttpStatus.OK).json({content: fileContent});
+  }
+
+  @Post('/visited')
+  async updateProjectVisit(@Res() response, @Body() data: VisitProjectDto) {
+    await this.projectService.updateProjectVisit(data);
+    return response.status(HttpStatus.OK).json({});
   }
 }

@@ -19,3 +19,9 @@ export class CreateProjectDataDto {
   userTemplate?: Project;
   public: boolean;
 }
+
+export class VisitProjectDto {
+  userId: number;
+  projectId: number;
+  timeStamp: number;
+}

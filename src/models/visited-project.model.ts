@@ -13,11 +13,13 @@ interface VisitedProjectAttributes {
   id: number;
   userId: number;
   projectId: number;
+  timeStamp: number;
 }
 
 interface VisitedProjectCreationAttributes extends VisitedProjectAttributes {
   userId: number;
   projectId: number;
+  timeStamp: number;
 }
 
 @Table({tableName: "visitedProjects"})
@@ -35,4 +37,8 @@ export class VisitedProject extends Model<VisitedProjectAttributes, VisitedProje
   @ForeignKey(() => Project)
   @Column({ field: 'projectId', type: DataType.INTEGER, allowNull: false })
   projectId: number;
+
+  @ApiProperty({required: true})
+  @Column({ field: 'timeStamp', type: DataType.DATE, allowNull: false })
+  timeStamp: number;
 }
