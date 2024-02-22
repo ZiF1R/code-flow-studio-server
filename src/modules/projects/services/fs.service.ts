@@ -119,4 +119,15 @@ export class FsService {
 
     return fs.readFileSync(fullPath, "utf8");
   }
+
+  async renameFile(projectName: string, oldPath: string, newPath: string): Promise<void> {
+    const fullOldPath = join(BASE_PROJECTS_DIR, projectName, oldPath);
+    const fullNewPath = join(BASE_PROJECTS_DIR, projectName, newPath);
+    await fs.renameSync(fullOldPath, fullNewPath);
+  }
+
+  async deleteFile(projectName: string, path: string): Promise<void> {
+    const fullPath = join(BASE_PROJECTS_DIR, projectName, path);
+    await fs.rmSync(fullPath, { recursive: true, force: true });
+  }
 }

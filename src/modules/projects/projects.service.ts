@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotAcceptableException,
   UnauthorizedException
@@ -14,6 +15,7 @@ import {InjectModel} from "@nestjs/sequelize";
 import {FsService} from "./services/fs.service";
 import {User} from "../../models/user.model";
 import {
+  Changes,
   FileMap, ProjectFile,
   ProjectRoom,
   ProjectRoomUser
@@ -243,5 +245,15 @@ export class ProjectsService {
     project.changed('updatedAt', true);
     project.updatedAt = data.timeStamp;
     await project.save();
+  }
+
+  async executeFileChanges(data: Changes): Promise<void> {
+    switch (data.action) {
+      case "rename": return await this.fsService.renameFile(data.projectCodeName, data.file.path, data.changedFile.path);
+      case "delete": return await this.fsService.deleteFile(data.projectCodeName, data.file.path);
+      case "edit": return;
+      case "transfer": return;
+      default: throw new BadRequestException();
+    }
   }
 }

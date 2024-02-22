@@ -10,7 +10,7 @@ import {
   ClientToServerEvents, JoinEvent, NewFile,
   ServerToClientEvents
 } from "./events.interface";
-import {Logger} from "@nestjs/common";
+import {BadRequestException, Logger} from "@nestjs/common";
 import {Server, Socket} from "socket.io";
 import {ProjectsService} from "../projects.service";
 import {platform} from "os";
@@ -35,10 +35,14 @@ export class ProjectsGateway implements OnGatewayConnection, OnGatewayDisconnect
     payload: Changes,
     @ConnectedSocket()
     socket: Socket,
-  ): Promise<Changes> {
-    this.logger.log(payload);
-
-    return payload;
+  ) {
+    try {
+      await this.projectsService.executeFileChanges(payload);
+      this.broadcastEvent("changes", payload.projectCodeName, socket, payload);
+      return payload;
+    } catch (e) {
+      throw new BadRequestException();
+    }
   }
 
   @SubscribeMessage('newFile')
@@ -48,7 +52,6 @@ export class ProjectsGateway implements OnGatewayConnection, OnGatewayDisconnect
     @ConnectedSocket()
     socket: Socket,
   ): Promise<NewFile> {
-    this.logger.log(payload);
     const created = await this.projectsService.createProjectFile(payload.projectName, payload.file);
 
     if (created) {

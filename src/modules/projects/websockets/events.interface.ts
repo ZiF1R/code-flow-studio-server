@@ -17,12 +17,21 @@ export interface ProjectRoom {
   users: ProjectRoomUser[]
 }
 
+export type FileActions = 'rename' | 'delete' | 'transfer' | 'edit';
+
 export interface Changes {
-  user: User
-  timeSent: string
   projectCodeName: string
-  fileName: string,
-  content: typeof Blob
+  file: ProjectFile,
+  action: FileActions
+
+  changedFile: {
+    name: string,
+    extension: string | null,
+    type: FileType | null,
+    path: string,
+    content: string | null,
+    removed: boolean,
+  }
 }
 
 export interface JoinEvent {
