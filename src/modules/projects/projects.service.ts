@@ -249,10 +249,10 @@ export class ProjectsService {
 
   async executeFileChanges(data: Changes): Promise<void> {
     switch (data.action) {
+      case "transfer":
       case "rename": return await this.fsService.renameFile(data.projectCodeName, data.file.path, data.changedFile.path);
       case "delete": return await this.fsService.deleteFile(data.projectCodeName, data.file.path);
       case "edit": return;
-      case "transfer": return;
       default: throw new BadRequestException();
     }
   }
